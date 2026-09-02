@@ -1,0 +1,37 @@
+.motion-layer{position:absolute;z-index:-1;inset:0;overflow:hidden;pointer-events:none}
+.motion-layer span{position:absolute;display:block;color:rgba(220,247,237,.34);text-shadow:0 0 16px rgba(190,245,223,.25)}
+.motion-wave{left:-15%;bottom:20%;font-size:5rem;letter-spacing:-.35em;animation:sea-flow 8s linear infinite}
+.motion-wave.second{left:45%;bottom:8%;font-size:7rem;opacity:.32;animation-duration:11s;animation-delay:-4s}
+.motion-light{left:10%;top:42%;color:#ffe0a0!important;font-size:1.2rem;animation:light-rise 5s ease-in-out infinite}
+.motion-light.second{left:83%;top:27%;font-size:.8rem;animation-delay:-2.2s}
+.motion-bird{left:-10%;top:18%;font-size:1.4rem;animation:bird-flight 12s linear infinite}
+.motion-bird.second{top:31%;font-size:.9rem;opacity:.55;animation-delay:-6s;animation-duration:15s}
+@keyframes sea-flow{to{transform:translateX(55vw)}}
+@keyframes light-rise{50%{opacity:.25;transform:translate(18px,-42px) scale(1.35)}}
+@keyframes bird-flight{to{transform:translateX(120vw) translateY(-28px)}}
+
+.mission-screen{justify-content:flex-end;padding:0 1.5rem max(2rem,env(safe-area-inset-bottom));overflow:hidden;background:#062d30;backdrop-filter:none}
+.mission-poster{position:absolute;z-index:-1;inset:0;overflow:hidden;background:#123f40}
+.mission-poster img{width:100%;height:100%;object-fit:cover;animation:poster-drift 9s ease-in-out infinite alternate}
+.poster-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,34,36,.08),rgba(5,38,40,.2) 35%,rgba(5,38,40,.96) 76%,#062d30)}
+.mission-screen[data-mission="1"] .poster-shade{background:linear-gradient(180deg,rgba(10,58,63,.06),rgba(7,54,57,.26) 36%,rgba(5,39,42,.96) 76%,#062d30)}
+.mission-screen[data-mission="2"] .poster-shade{background:linear-gradient(180deg,rgba(92,51,34,.05),rgba(29,47,47,.24) 36%,rgba(5,38,40,.96) 76%,#062d30)}
+.poster-symbol{position:absolute;color:#ffe0a1;text-shadow:0 0 18px rgba(255,218,147,.8);animation:poster-spark 3.2s ease-in-out infinite}
+.poster-symbol.one{left:15%;top:22%;font-size:1.3rem}.poster-symbol.two{right:16%;top:33%;color:#a9e4c4;font-size:1.6rem;animation-delay:-1.1s}.poster-symbol.three{left:55%;top:12%;font-size:.8rem;animation-delay:-2.2s}
+.mission-screen[data-mission="1"] .poster-symbol.two{color:#9edee0}.mission-screen[data-mission="2"] .poster-symbol{color:#ffd894}
+.mission-screen>.mission-icon,.mission-screen>small,.mission-screen>h2,.mission-screen>p,.mission-screen>.mission-goal,.mission-screen>button{position:relative;z-index:2}
+.mission-screen .mission-icon{width:4.5rem;height:4.5rem;margin-bottom:.75rem;border:1px solid rgba(255,255,255,.45);box-shadow:0 12px 38px rgba(0,0,0,.3),0 0 25px rgba(135,225,194,.25)}
+.mission-screen h2{margin:.35rem 0 .45rem;font-size:clamp(2rem,10vw,3rem)}
+.mission-screen p{margin-bottom:.85rem;font-size:.9rem;line-height:1.45}
+.mission-screen .mission-goal{margin:0 0 .9rem;background:rgba(5,43,44,.78);backdrop-filter:blur(12px)}
+.mission-screen .soundtrack{margin-top:.55rem;color:rgba(202,232,224,.58);font-size:.7rem;letter-spacing:.02em;text-transform:none}
+@keyframes poster-drift{from{transform:scale(1.02) translateX(-1%)}to{transform:scale(1.1) translateX(2%)}}
+@keyframes poster-spark{50%{opacity:.3;transform:translateY(-24px) rotate(18deg) scale(1.4)}}
+
+.target{animation:appear .25s ease-out,target-breathe 1.2s ease-in-out .25s infinite alternate}
+.target.bad{animation:appear .25s ease-out,bad-drift 1.5s ease-in-out .25s infinite alternate}
+.target.pop{animation:pop .3s ease-out forwards}.target.miss{animation:miss .35s ease-out forwards}
+@keyframes target-breathe{to{transform:translateY(-8px) scale(1.07);filter:drop-shadow(0 12px 18px rgba(255,220,151,.35))}}
+@keyframes bad-drift{to{transform:translateX(7px) rotate(7deg)}}
+@media(max-height:690px){.mission-screen{padding-bottom:max(.75rem,env(safe-area-inset-bottom))}.mission-screen .mission-icon{width:3.6rem;height:3.6rem;margin-bottom:.35rem}.mission-screen h2{font-size:1.85rem}.mission-screen p{margin-bottom:.45rem}.mission-screen .mission-goal{margin-bottom:.45rem;padding:.45rem .75rem}.mission-screen .primary{height:2.75rem}.mission-screen .soundtrack{margin-top:.25rem}}
+@media(prefers-reduced-motion:reduce){.motion-layer,.poster-symbol{display:none}.mission-poster img,.target,.target.bad{animation:none}}
