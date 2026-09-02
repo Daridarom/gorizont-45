@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#082f32">
   <meta name="description" content="Мобильная мини-игра о будущем территории «Горизонт 45»">
   <title>Огни Горизонта — мобильная игра</title>
-  <link rel="stylesheet" href="app.css">
-  <link rel="stylesheet" href="motion.css">
+  <link rel="stylesheet" href="app.css?v=4">
+  <link rel="stylesheet" href="motion.css?v=4">
 </head>
 <body>
   <main class="game" id="game">
@@ -64,7 +64,7 @@
         <p id="missionText">Соберите ростки, чтобы вернуть ландшафту жизнь.</p>
         <div class="mission-goal"><span id="goalIcon">♧</span><strong><b id="goalCount">8</b> огней</strong><small>за 25 секунд</small></div>
         <button class="primary" id="missionButton" type="button">Начать миссию <span>›</span></button>
-        <small class="soundtrack">♪ музыка миссии включена</small>
+        <small class="soundtrack" id="soundtrackStatus">♪ музыка миссии включена</small>
       </section>
 
       <section class="screen result" id="result" hidden>
@@ -88,6 +88,6 @@
       </section>
     </section>
   </main>
-  <script src="app.js"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
