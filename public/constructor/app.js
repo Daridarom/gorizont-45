@@ -5,9 +5,8 @@ const missions = [
 ];
 const $ = (id) => document.getElementById(id);
 let round = 0, score = 0, collected = 0, lives = 3, combo = 0, timeLeft = 0;
-let timerId = null, spawnId = null, musicId = null, playing = false, soundOn = true, audioContext = null;
+let timerId = null, spawnId = null, playing = false, soundOn = true, audioContext = null;
 let roundStartedAt = 0, pausedAt = 0;
-let musicStep = 0;
 
 function haptic(pattern = 20) { navigator.vibrate?.(pattern); }
 function tone(frequency = 520, duration = 0.07) {
@@ -29,37 +28,63 @@ const soundtracks = [
   { tempo: 350, notes: [220, 293.66, 329.63, 392, 329.63, 293.66] },
   { tempo: 290, notes: [196, 246.94, 293.66, 392, 493.88, 392, 293.66] },
 ];
-function musicNote(frequency, duration = 0.2, volume = 0.018, type = "sine") {
-  if (!soundOn || !audioContext) return;
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-  oscillator.type = type;
-  oscillator.frequency.value = frequency;
-  gain.gain.setValueAtTime(volume, audioContext.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
-  oscillator.connect(gain).connect(audioContext.destination);
-  oscillator.start();
-  oscillator.stop(audioContext.currentTime + duration);
+const MUSIC_PART_SECONDS = 8;
+function makeSoundtrack() {
+  const sampleRate = 8000;
+  const duration = MUSIC_PART_SECONDS * soundtracks.length;
+  const samples = sampleRate * duration;
+  const buffer = new ArrayBuffer(44 + samples * 2);
+  const view = new DataView(buffer);
+  const writeText = (offset, text) => [...text].forEach((char, index) => view.setUint8(offset + index, char.charCodeAt(0)));
+  writeText(0, "RIFF"); view.setUint32(4, 36 + samples * 2, true); writeText(8, "WAVE");
+  writeText(12, "fmt "); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true); view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true); view.setUint16(34, 16, true); writeText(36, "data"); view.setUint32(40, samples * 2, true);
+  for (let index = 0; index < samples; index += 1) {
+    const time = index / sampleRate;
+    const part = Math.min(soundtracks.length - 1, Math.floor(time / MUSIC_PART_SECONDS));
+    const localTime = time - part * MUSIC_PART_SECONDS;
+    const track = soundtracks[part];
+    const stepLength = track.tempo / 1000;
+    const step = Math.floor(localTime / stepLength);
+    const noteTime = localTime % stepLength;
+    const frequency = track.notes[step % track.notes.length];
+    const envelope = Math.min(1, noteTime * 18) * Math.exp(-noteTime * (part === 2 ? 2.5 : 3.4));
+    const melody = Math.sin(2 * Math.PI * frequency * localTime) * envelope * 0.2;
+    const pad = Math.sin(2 * Math.PI * frequency * 0.5 * localTime) * 0.065;
+    const shimmer = part === 2 ? Math.sin(2 * Math.PI * frequency * 2 * localTime) * envelope * 0.035 : 0;
+    const fade = Math.min(1, localTime * 2, (MUSIC_PART_SECONDS - localTime) * 2);
+    const sample = Math.max(-1, Math.min(1, (melody + pad + shimmer) * fade));
+    view.setInt16(44 + index * 2, sample * 32767, true);
+  }
+  return URL.createObjectURL(new Blob([buffer], { type: "audio/wav" }));
 }
-function startMusic() {
-  clearInterval(musicId);
-  if (!soundOn) return;
+const musicPlayer = new Audio(makeSoundtrack());
+musicPlayer.preload = "auto";
+musicPlayer.playsInline = true;
+musicPlayer.volume = 0.52;
+let musicPart = 0;
+musicPlayer.addEventListener("timeupdate", () => {
+  const start = musicPart * MUSIC_PART_SECONDS;
+  if (musicPlayer.currentTime >= start + MUSIC_PART_SECONDS - 0.08) musicPlayer.currentTime = start;
+});
+async function startMusic() {
+  if (!soundOn) return false;
+  musicPart = Math.min(round, soundtracks.length - 1);
+  const start = musicPart * MUSIC_PART_SECONDS;
+  if (musicPlayer.currentTime < start || musicPlayer.currentTime >= start + MUSIC_PART_SECONDS) musicPlayer.currentTime = start;
   try {
-    audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-    audioContext.resume?.();
-    const track = soundtracks[Math.min(round, soundtracks.length - 1)];
-    musicStep = 0;
-    const tick = () => {
-      const note = track.notes[musicStep % track.notes.length];
-      musicNote(note, track.tempo / 1000 * 0.82, 0.015, round === 2 ? "triangle" : "sine");
-      if (musicStep % 4 === 0) musicNote(note / 2, track.tempo / 1000 * 1.8, 0.009, "sine");
-      musicStep += 1;
-    };
-    tick();
-    musicId = setInterval(tick, track.tempo);
-  } catch {}
+    await musicPlayer.play();
+    $("soundButton").classList.remove("attention");
+    $("soundtrackStatus").textContent = "♪ музыка миссии включена";
+    return true;
+  } catch {
+    $("soundButton").classList.add("attention");
+    $("soundtrackStatus").textContent = "Нажмите ♪, чтобы включить музыку";
+    return false;
+  }
 }
-function stopMusic() { clearInterval(musicId); musicId = null; }
+function stopMusic() { musicPlayer.pause(); }
 function showScreen(id) {
   ["intro", "missionScreen", "result", "gameover"].forEach((name) => { $(name).hidden = name !== id; });
 }
@@ -190,16 +215,16 @@ function finishGame() {
 function newGame() {
   stopRound(); round = 0; score = 0; collected = 0; lives = 3; $("score").textContent = "0"; prepareMission();
 }
-$("startButton").onclick = () => { startMusic(); newGame(); };
+$("startButton").onclick = async () => { round = 0; await startMusic(); newGame(); };
 $("missionButton").onclick = startRound;
 $("retryButton").onclick = startRound;
 $("againButton").onclick = newGame;
 $("restartButton").onclick = () => { stopRound(); stopMusic(); round = 0; score = 0; showScreen("intro"); };
-$("soundButton").onclick = () => {
+$("soundButton").onclick = async () => {
   soundOn = !soundOn;
   $("soundButton").textContent = soundOn ? "♪" : "×";
   $("soundButton").setAttribute("aria-label", soundOn ? "Выключить звук" : "Включить звук");
-  if (soundOn) startMusic(); else stopMusic();
+  if (soundOn) await startMusic(); else stopMusic();
 };
 $("shareButton").onclick = async () => {
   const text = `Я зажёг Горизонт и собрал ${score} огней ✦ Сможешь больше?`;
@@ -213,7 +238,7 @@ $("shareButton").onclick = async () => {
 };
 document.addEventListener("visibilitychange", () => {
   if (!playing) return;
-  if (document.hidden) { pausedAt = Date.now(); audioContext?.suspend?.(); }
+  if (document.hidden) { pausedAt = Date.now(); musicPlayer.pause(); audioContext?.suspend?.(); }
   else if (pausedAt) {
     roundStartedAt += Date.now() - pausedAt;
     pausedAt = 0;
