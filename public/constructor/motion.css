@@ -11,8 +11,11 @@
 @keyframes bird-flight{to{transform:translateX(120vw) translateY(-28px)}}
 
 .mission-screen{justify-content:flex-end;padding:0 1.5rem max(2rem,env(safe-area-inset-bottom));overflow:hidden;background:#062d30;backdrop-filter:none}
-.mission-poster{position:absolute;z-index:-1;inset:0;overflow:hidden;background:#123f40}
+.mission-poster{position:absolute;z-index:0;inset:0;overflow:hidden;background:#123f40}
 .mission-poster img{width:100%;height:100%;object-fit:cover;animation:poster-drift 9s ease-in-out infinite alternate}
+.mission-screen[data-mission="0"] .mission-poster img{object-position:50% 48%}
+.mission-screen[data-mission="1"] .mission-poster img{object-position:50% 58%}
+.mission-screen[data-mission="2"] .mission-poster img{object-position:50% 68%}
 .poster-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,34,36,.08),rgba(5,38,40,.2) 35%,rgba(5,38,40,.96) 76%,#062d30)}
 .mission-screen[data-mission="1"] .poster-shade{background:linear-gradient(180deg,rgba(10,58,63,.06),rgba(7,54,57,.26) 36%,rgba(5,39,42,.96) 76%,#062d30)}
 .mission-screen[data-mission="2"] .poster-shade{background:linear-gradient(180deg,rgba(92,51,34,.05),rgba(29,47,47,.24) 36%,rgba(5,38,40,.96) 76%,#062d30)}
@@ -35,3 +38,5 @@
 @keyframes bad-drift{to{transform:translateX(7px) rotate(7deg)}}
 @media(max-height:690px){.mission-screen{padding-bottom:max(.75rem,env(safe-area-inset-bottom))}.mission-screen .mission-icon{width:3.6rem;height:3.6rem;margin-bottom:.35rem}.mission-screen h2{font-size:1.85rem}.mission-screen p{margin-bottom:.45rem}.mission-screen .mission-goal{margin-bottom:.45rem;padding:.45rem .75rem}.mission-screen .primary{height:2.75rem}.mission-screen .soundtrack{margin-top:.25rem}}
 @media(prefers-reduced-motion:reduce){.motion-layer,.poster-symbol{display:none}.mission-poster img,.target,.target.bad{animation:none}}
+.top-actions button.attention{color:#123e3b;background:#ffd68b;box-shadow:0 0 0 4px rgba(255,214,139,.22);animation:sound-pulse 1s ease-in-out infinite alternate}
+@keyframes sound-pulse{to{transform:scale(1.1)}}
