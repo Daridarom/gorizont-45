@@ -7,7 +7,7 @@
   <meta name="description" content="Мобильная мини-игра о будущем территории «Горизонт 45»">
   <title>Огни Горизонта — мобильная игра</title>
   <link rel="stylesheet" href="app.css">
-  <style>.target{animation:appear .28s ease-out}</style>
+  <link rel="stylesheet" href="motion.css">
 </head>
 <body>
   <main class="game" id="game">
@@ -22,6 +22,11 @@
     <section class="playfield" id="playfield" aria-label="Игровое поле">
       <div class="sky"></div><div class="sun"></div><div class="ridge far"></div><div class="ridge near"></div><div class="sea"></div><div class="shore"></div>
       <div class="ambient"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="motion-layer" aria-hidden="true">
+        <span class="motion-wave">≋</span><span class="motion-wave second">≋</span>
+        <span class="motion-light">✦</span><span class="motion-light second">✦</span>
+        <span class="motion-bird">⌁</span><span class="motion-bird second">⌁</span>
+      </div>
 
       <div class="hud" id="hud" hidden>
         <div class="round"><small>МИССИЯ</small><strong id="roundLabel">1 / 3</strong></div>
@@ -47,13 +52,19 @@
         <em>3 короткие миссии · около 2 минут</em>
       </section>
 
-      <section class="screen mission-screen" id="missionScreen" hidden>
+      <section class="screen mission-screen" id="missionScreen" data-mission="0" hidden>
+        <div class="mission-poster">
+          <img id="missionImage" src="../images/routes.webp" alt="Экологическая тропа на склоне">
+          <div class="poster-shade"></div>
+          <span class="poster-symbol one">✦</span><span class="poster-symbol two">♧</span><span class="poster-symbol three">✦</span>
+        </div>
         <div class="mission-icon" id="missionIcon">♧</div>
         <small id="missionKicker">МИССИЯ 1</small>
         <h2 id="missionTitle">Пробудите склон</h2>
         <p id="missionText">Соберите ростки, чтобы вернуть ландшафту жизнь.</p>
         <div class="mission-goal"><span id="goalIcon">♧</span><strong><b id="goalCount">8</b> огней</strong><small>за 25 секунд</small></div>
         <button class="primary" id="missionButton" type="button">Начать миссию <span>›</span></button>
+        <small class="soundtrack">♪ музыка миссии включена</small>
       </section>
 
       <section class="screen result" id="result" hidden>
