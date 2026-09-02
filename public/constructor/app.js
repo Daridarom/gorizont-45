@@ -1,12 +1,13 @@
 const missions = [
-  { name: "Пробудите склон", text: "Соберите ростки, чтобы вернуть ландшафту жизнь.", icon: "♧", good: ["♧", "✦", "❋"], bad: ["■", "▰"], goal: 8, seconds: 25 },
-  { name: "Сохраните берег", text: "Соберите волны и оставьте берег свободным для людей.", icon: "≋", good: ["≋", "◌", "✦"], bad: ["▰", "◆"], goal: 10, seconds: 25 },
-  { name: "Зажгите маяк", text: "Соберите последние огни и покажите путь в будущее.", icon: "⌁", good: ["⌁", "✦", "◇"], bad: ["■", "◆"], goal: 12, seconds: 28 },
+  { name: "Пробудите склон", text: "Соберите ростки, чтобы вернуть ландшафту жизнь.", icon: "♧", good: ["♧", "✦", "❋"], bad: ["■", "▰"], goal: 8, seconds: 25, image: "../images/routes.webp", alt: "Экологическая тропа на зелёном склоне" },
+  { name: "Сохраните берег", text: "Соберите волны и оставьте берег свободным для людей.", icon: "≋", good: ["≋", "◌", "✦"], bad: ["▰", "◆"], goal: 10, seconds: 25, image: "../images/hero.webp", alt: "Свободный берег Бухты Космонавтов" },
+  { name: "Зажгите маяк", text: "Соберите последние огни и покажите путь в будущее.", icon: "⌁", good: ["⌁", "✦", "◇"], bad: ["■", "◆"], goal: 12, seconds: 28, image: "../images/sunset.webp", alt: "Закат над будущим комплексом Горизонт 45" },
 ];
 const $ = (id) => document.getElementById(id);
 let round = 0, score = 0, collected = 0, lives = 3, combo = 0, timeLeft = 0;
-let timerId = null, spawnId = null, playing = false, soundOn = true, audioContext = null;
+let timerId = null, spawnId = null, musicId = null, playing = false, soundOn = true, audioContext = null;
 let roundStartedAt = 0, pausedAt = 0;
+let musicStep = 0;
 
 function haptic(pattern = 20) { navigator.vibrate?.(pattern); }
 function tone(frequency = 520, duration = 0.07) {
@@ -23,6 +24,42 @@ function tone(frequency = 520, duration = 0.07) {
     oscillator.stop(audioContext.currentTime + duration);
   } catch {}
 }
+const soundtracks = [
+  { tempo: 430, notes: [261.63, 329.63, 392, 329.63, 293.66, 349.23] },
+  { tempo: 350, notes: [220, 293.66, 329.63, 392, 329.63, 293.66] },
+  { tempo: 290, notes: [196, 246.94, 293.66, 392, 493.88, 392, 293.66] },
+];
+function musicNote(frequency, duration = 0.2, volume = 0.018, type = "sine") {
+  if (!soundOn || !audioContext) return;
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = type;
+  oscillator.frequency.value = frequency;
+  gain.gain.setValueAtTime(volume, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+  oscillator.connect(gain).connect(audioContext.destination);
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + duration);
+}
+function startMusic() {
+  clearInterval(musicId);
+  if (!soundOn) return;
+  try {
+    audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+    audioContext.resume?.();
+    const track = soundtracks[Math.min(round, soundtracks.length - 1)];
+    musicStep = 0;
+    const tick = () => {
+      const note = track.notes[musicStep % track.notes.length];
+      musicNote(note, track.tempo / 1000 * 0.82, 0.015, round === 2 ? "triangle" : "sine");
+      if (musicStep % 4 === 0) musicNote(note / 2, track.tempo / 1000 * 1.8, 0.009, "sine");
+      musicStep += 1;
+    };
+    tick();
+    musicId = setInterval(tick, track.tempo);
+  } catch {}
+}
+function stopMusic() { clearInterval(musicId); musicId = null; }
 function showScreen(id) {
   ["intro", "missionScreen", "result", "gameover"].forEach((name) => { $(name).hidden = name !== id; });
 }
@@ -34,9 +71,13 @@ function prepareMission() {
   $("missionKicker").textContent = `МИССИЯ ${round + 1} ИЗ 3`;
   $("missionTitle").textContent = mission.name;
   $("missionText").textContent = mission.text;
+  $("missionImage").src = mission.image;
+  $("missionImage").alt = mission.alt;
+  $("missionScreen").dataset.mission = String(round);
   $("goalCount").textContent = mission.goal;
   $("missionButton").firstChild.textContent = round === 0 ? "Начать миссию " : "Продолжить ";
   showScreen("missionScreen");
+  startMusic();
 }
 function startRound() {
   const mission = missions[round];
@@ -49,7 +90,10 @@ function startRound() {
   $("timer").classList.remove("danger");
   $("tip").hidden = false;
   setTimeout(() => { if (playing) $("tip").hidden = true; }, 2600);
-  updateHud(); spawnTarget(false); scheduleSpawn();
+  startMusic();
+  updateHud(); spawnTarget(false); spawnTarget(false);
+  setTimeout(() => spawnTarget(true), 700);
+  scheduleSpawn();
   roundStartedAt = Date.now();
   timerId = setInterval(() => {
     if (!playing) return;
@@ -63,7 +107,8 @@ function scheduleSpawn() {
   if (!playing) return;
   const delay = Math.max(460, 850 - round * 100 - collected * 10);
   spawnId = setTimeout(() => {
-    spawnTarget(Math.random() < 0.24 + round * 0.04);
+    spawnTarget(Math.random() < 0.25 + round * 0.04);
+    if (Math.random() < 0.34 + round * 0.07) setTimeout(() => spawnTarget(Math.random() < 0.2), 150);
     scheduleSpawn();
   }, delay);
 }
@@ -145,15 +190,16 @@ function finishGame() {
 function newGame() {
   stopRound(); round = 0; score = 0; collected = 0; lives = 3; $("score").textContent = "0"; prepareMission();
 }
-$("startButton").onclick = newGame;
+$("startButton").onclick = () => { startMusic(); newGame(); };
 $("missionButton").onclick = startRound;
 $("retryButton").onclick = startRound;
 $("againButton").onclick = newGame;
-$("restartButton").onclick = () => { stopRound(); round = 0; score = 0; showScreen("intro"); };
+$("restartButton").onclick = () => { stopRound(); stopMusic(); round = 0; score = 0; showScreen("intro"); };
 $("soundButton").onclick = () => {
   soundOn = !soundOn;
   $("soundButton").textContent = soundOn ? "♪" : "×";
   $("soundButton").setAttribute("aria-label", soundOn ? "Выключить звук" : "Включить звук");
+  if (soundOn) startMusic(); else stopMusic();
 };
 $("shareButton").onclick = async () => {
   const text = `Я зажёг Горизонт и собрал ${score} огней ✦ Сможешь больше?`;
@@ -167,9 +213,10 @@ $("shareButton").onclick = async () => {
 };
 document.addEventListener("visibilitychange", () => {
   if (!playing) return;
-  if (document.hidden) pausedAt = Date.now();
+  if (document.hidden) { pausedAt = Date.now(); audioContext?.suspend?.(); }
   else if (pausedAt) {
     roundStartedAt += Date.now() - pausedAt;
     pausedAt = 0;
+    if (soundOn) { audioContext?.resume?.(); startMusic(); }
   }
 });
