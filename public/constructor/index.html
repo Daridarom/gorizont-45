@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b393b">
+  <meta name="description" content="Интерактивный конструктор территории «Горизонт 45» в Бухте Космонавтов.">
+  <title>Горизонт 45 — конструктор территории</title>
+  <link rel="icon" href="../images/logo.png">
+  <link rel="stylesheet" href="app.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="app" id="app">
+    <header class="topbar">
+      <a class="brand" href="../" aria-label="Вернуться на сайт Горизонт 45">
+        <span class="brand-mark"><b>45</b><i></i></span>
+        <span><strong>Горизонт 45</strong><small>конструктор территории</small></span>
+      </a>
+      <div class="location"><span>⌖</span><b>Бухта Космонавтов</b><small>45.4010° N</small></div>
+      <div class="actions">
+        <button id="undo" class="icon-button" type="button" aria-label="Отменить последнее добавление" title="Отменить">↶</button>
+        <button id="reset" class="icon-button" type="button" aria-label="Вернуть стартовый эскиз" title="Сбросить">↻</button>
+        <button id="night" class="day-toggle" type="button" aria-label="Переключить время суток"><span>☀</span><i></i><span>☾</span></button>
+        <button id="share" class="share-button" type="button"><span>⌁</span><b>Поделиться</b></button>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <aside class="catalog panel">
+        <div class="panel-title"><div><small>Шаг 1</small><h1>Добавьте объекты</h1></div><span title="Выберите объект и укажите место на карте">?</span></div>
+        <p class="instruction">Выберите объект, затем укажите место на склоне. Маркеры можно перетаскивать.</p>
+        <div class="facility-list" id="facilityList"></div>
+        <section class="budget">
+          <div><span>Ресурс концепции</span><strong><b id="budgetLeft">0</b> <small>/ 120 ед.</small></strong></div>
+          <div class="bar"><i id="budgetBar"></i></div>
+          <p>Условные единицы помогают сравнивать сценарии и не являются сметой.</p>
+        </section>
+      </aside>
+
+      <section class="map-column" aria-label="Интерактивный план территории">
+        <div class="map-topline">
+          <span class="concept-label">✦ Концептуальный план</span>
+          <span class="map-tip" id="mapTip">Укажите место для объекта</span>
+        </div>
+        <div class="terrain" id="terrain">
+          <div class="terrain-image"></div>
+          <div class="terrain-shade"></div>
+          <div class="coast-zone"><span>≋ Берег свободен</span></div>
+          <span class="zone upper">верхняя площадка</span>
+          <span class="zone slope">склон</span>
+          <div id="markers"></div>
+          <div class="object-card" id="objectCard" hidden></div>
+          <div class="north"><b>С</b><i></i></div>
+          <div class="scale"><i></i>100 м</div>
+        </div>
+        <div class="mobile-palette" id="mobilePalette"></div>
+      </section>
+
+      <aside class="balance panel">
+        <div class="panel-title"><div><small>Шаг 2</small><h2>Найдите баланс</h2></div><span class="goal-count" id="goalCount">0/4</span></div>
+        <p class="instruction">Сильная концепция бережёт природу, привлекает гостей и создаёт жизнь на территории.</p>
+        <div class="metrics" id="metrics"></div>
+        <section class="principle"><span>≋</span><div><strong>Берег — общественное пространство</strong><p>Застройка на береговой линии отключена правилами конструктора.</p></div><b>✓</b></section>
+        <section class="recommendation" id="recommendation"></section>
+        <button class="result-button" id="result" type="button">Посмотреть результат <span>›</span></button>
+        <p class="autosave">✓ Изменения сохраняются на этом устройстве</p>
+      </aside>
+    </section>
+  </main>
+
+  <dialog id="summary" class="summary">
+    <form method="dialog"><button class="dialog-close" aria-label="Закрыть">×</button></form>
+    <small class="summary-kicker">Результат концепции</small>
+    <h2 id="summaryTitle">Концепция уже принимает форму</h2>
+    <p class="summary-intro">Игровая оценка сценария «Горизонт 45». Показатели предназначены для сравнения идей, а не для финансового расчёта.</p>
+    <div class="score-row">
+      <div class="score-ring" id="scoreRing"><span><b id="scoreValue">0</b><small>из 100</small></span></div>
+      <div><small id="summaryGoals">0/4 целей достигнуто</small><h3 id="summaryVerdict">Развивающийся сценарий</h3><p id="summaryAdvice"></p></div>
+    </div>
+    <div class="summary-metrics" id="summaryMetrics"></div>
+    <section class="composition"><small>Состав концепции</small><div id="composition"></div></section>
+    <footer><button id="copySummary" class="secondary" type="button">⌁ Скопировать ссылку</button><button id="continue" type="button">Продолжить проектирование</button></footer>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
